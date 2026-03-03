@@ -17,7 +17,7 @@ jobs:
       run: |
         echo "COMMIT_MSG=${{ github.event.head_commit.message }}">> $GITHUB_OUTPUT
     - name: Print variable
-      run: echo $COMMIT_MSG
+      run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
   job2:
     name: Pruebas
     runs-on: ubuntu-latest
