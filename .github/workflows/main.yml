@@ -23,7 +23,7 @@ jobs:
         echo "branch=${{ github.ref_name }}">> $GITHUB_OUTPUT
     - name: Print variable
       run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
-    - name: Print branch
+    - name: Printbranch
       run: echo "${{ steps.branch.outputs.branch}}"
   job2:
     name: Merge devolp a HU
@@ -39,7 +39,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         source-branch: develop
         target-branch: needs.job1.outputs.branch
-    
   job3:
     name: Pruebas
     needs: job1
