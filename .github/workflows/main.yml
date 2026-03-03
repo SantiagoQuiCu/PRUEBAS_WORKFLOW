@@ -43,18 +43,13 @@ jobs:
         cd backend
         python -m unittest discover -s tests -v
     - name: Validar resultado con errores
-      if: ${{ failure() }}
       id: mensaje
-      env:
-        MENSAJE_ERROR: Una o varias pruebas fallaron
-      run:
-        echo "respuesta=$MENSAJE_ERROR">> $GITHUB_OUTPUT
-    - name: Validar resultado sin errores
-      if: ${{ success() }}
-      id: mensaje
-      env:
-        MENSAJE_EXITO: Todas las pruebas fueron exitosas
-      run: echo "respuesta=$MENSAJE_EXITO">> $GITHUB_OUTPUT
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "respuesta=Todas las pruebas fueron exitosas" >> $GITHUB_OUTPUT
+        else
+          echo "respuesta=Una o varias pruebas fallaron" >> $GITHUB_OUTPUT
+        fi
     - name: Cálculo de cubrimiento
       id: cubrimiento
       run: |
