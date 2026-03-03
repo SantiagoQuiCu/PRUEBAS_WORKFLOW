@@ -43,7 +43,17 @@ class VistaMarca(Resource):
     
     def put(self, id_marca):
         return None
-    
+    def delete(self,id_marca):
+        try:
+            marca = db.session.get(Marca,id_marca)
+            if marca.vehiculos != []:
+                return {'error':"No se puede eliminar la marca porque tiene vehículos asociados"},400      
+            db.session.delete(marca)
+            db.session.commit()
+            return {"mensaje":"Marca eliminada exitosamente"},200
+                
+        except Exception as e:
+            return {'error':"Error al eliminar la marca"},400
 class VistaVehiculos(Resource):
     def get(self):
         return [vehiculo_schema.dump(vehiculo) for vehiculo in Vehiculo.query.order_by(Vehiculo.modelo).all()]
