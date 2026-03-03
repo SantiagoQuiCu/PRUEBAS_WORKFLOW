@@ -46,7 +46,7 @@ jobs:
       if: ${{ failure() }}
       env:
         MENSAJE_ERROR: Una o varias pruebas fallaron
-      run: echo "respuesta=MENSAJE_EXITO" >> $GITHUB_OUTPUT
+      run: echo "respuesta=MENSAJE_ERROR" >> $GITHUB_OUTPUT
     - name: Validar resultado sin errores
       if: ${{ success() }}
       env:
@@ -58,3 +58,6 @@ jobs:
           cd backend
           coverage run -m unittest discover -s tests -v
           coverage report -m
+    - name: print variable
+      run: echo "${{ steps.correr-pruebas.outputs.respuesta}}"
+      
