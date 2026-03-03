@@ -38,7 +38,7 @@ jobs:
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         source-branch: develop
-        target-branch: needs.job1.outputs.branch
+        target-branch: ${{ needs.job1.outputs.salida_branch }}
   job3:
     name: Pruebas
     needs: job1
