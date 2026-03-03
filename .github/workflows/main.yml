@@ -5,6 +5,17 @@ on:
       - "HU**"
 jobs:
   job1:
+    name: Nombre_commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout de repositorio
+        uses: actions/checkout@v4
+      -  name: Get last commit message
+        id: commit_message
+        run: |
+          echo "COMMIT_MSG=${{ github.event.head_commit.message }}">> $GITHUB_ENV
+          echo $COMMIT_MSG
+  job2:
     name: Pruebas
     runs-on: ubuntu-latest
     outputs:
