@@ -1,0 +1,383 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="#" (click)="mostrarVista('principal')">
+      <i class="fas fa-car"></i> AutoHub
+    </a>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <!-- Mensajes de éxito/error -->
+  <div *ngIf="mensaje" class="alert alert-dismissible fade show" 
+       [ngClass]="{'alert-success': tipoMensaje === 'success', 'alert-danger': tipoMensaje === 'error'}">
+    <i class="fas" [ngClass]="{'fa-check-circle': tipoMensaje === 'success', 'fa-exclamation-triangle': tipoMensaje === 'error'}"></i>
+    {{ mensaje }}
+    <button type="button" class="btn-close" (click)="mensaje = ''; tipoMensaje = ''"></button>
+  </div>
+
+  <!-- Vista Principal -->
+  <div *ngIf="vistaActual === 'principal'">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-body text-center">
+            <h1 class="card-title">AutoHub</h1>
+            <p class="card-text">Sistema de gestion de vehiculos y marcas para vendedores de DriveMax</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <button class="btn btn-success w-100 mb-2" (click)="mostrarVista('crear-vehiculo')">
+          <i class="fas fa-plus"></i> Agregar Vehiculo
+        </button>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-info w-100 mb-2" (click)="mostrarVista('marcas')">
+          <i class="fas fa-tags"></i> Gestionar Marcas
+        </button>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-warning w-100 mb-2" (click)="cargarReporte()">
+          <i class="fas fa-chart-bar"></i> Reporte de Marcas
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <h3>Listado de Vehiculos</h3>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Modelo</th>
+                <th>Anio</th>
+                <th>Precio</th>
+                <th>Color</th>
+                <th>Marca</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let vehiculo of vehiculos">
+                <td>{{ vehiculo.modelo }}</td>
+                <td>{{ vehiculo.anio }}</td>
+                <td>${{ vehiculo.precio | number }}</td>
+                <td>{{ vehiculo.color }}</td>
+                <td>{{ getMarcaNombre(vehiculo.marca_id) }}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary me-1" (click)="verDetalleVehiculo(vehiculo)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-warning me-1" (click)="editarVehiculo(vehiculo)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="eliminarVehiculo(vehiculo.id)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Crear Vehiculo -->
+  <div *ngIf="vistaActual === 'crear-vehiculo'">
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h3>Agregar Nuevo Vehiculo</h3>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="crearVehiculo()">
+              <div class="mb-3">
+                <label class="form-label">Modelo</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoVehiculo.modelo" name="modelo" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Anio</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevoVehiculo.anio" name="anio" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Precio</label>
+                <input type="number" step="0.01" class="form-control" [(ngModel)]="nuevoVehiculo.precio" name="precio" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Color</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoVehiculo.color" name="color" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Marca</label>
+                <select class="form-control" [(ngModel)]="nuevoVehiculo.marca_id" name="marca_id" required>
+                  <option value="0">Seleccione una marca</option>
+                  <option *ngFor="let marca of marcas" [value]="marca.id">{{ marca.nombre }}</option>
+                </select>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" (click)="mostrarVista('principal')">Cancelar</button>
+                <button type="button" class="btn btn-info" (click)="mostrarVista('marcas')">Gestionar Marcas</button>
+                <button type="submit" class="btn btn-success">Guardar Vehiculo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Editar Vehiculo -->
+  <div *ngIf="vistaActual === 'editar-vehiculo'">
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h3>Editar Vehiculo</h3>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="actualizarVehiculo()">
+              <div class="mb-3">
+                <label class="form-label">Modelo</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoVehiculo.modelo" name="modelo" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Anio</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevoVehiculo.anio" name="anio" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Precio</label>
+                <input type="number" step="0.01" class="form-control" [(ngModel)]="nuevoVehiculo.precio" name="precio" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Color</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoVehiculo.color" name="color" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Marca</label>
+                <select class="form-control" [(ngModel)]="nuevoVehiculo.marca_id" name="marca_id" required>
+                  <option *ngFor="let marca of marcas" [value]="marca.id">{{ marca.nombre }}</option>
+                </select>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" (click)="mostrarVista('principal')">Cancelar</button>
+                <button type="submit" class="btn btn-success">Actualizar Vehiculo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Marcas -->
+  <div *ngIf="vistaActual === 'marcas'">
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3>Gestion de Marcas</h3>
+          <div>
+            <button class="btn btn-success me-2" (click)="mostrarVista('crear-marca')">
+              <i class="fas fa-plus"></i> Agregar Marca
+            </button>
+            <button class="btn btn-secondary" (click)="mostrarVista('principal')">
+              <i class="fas fa-arrow-left"></i> Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Pais</th>
+                <th>Fundacion</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let marca of marcas">
+                <td>{{ marca.nombre }}</td>
+                <td>{{ marca.pais }}</td>
+                <td>{{ marca.fundacion }}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning me-1" (click)="editarMarca(marca)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="eliminarMarca(marca.id)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Crear Marca -->
+  <div *ngIf="vistaActual === 'crear-marca'">
+    <div class="row">
+      <div class="col-md-6 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h3>Agregar Nueva Marca</h3>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="crearMarca()">
+              <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevaMarca.nombre" name="nombre" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Pais</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevaMarca.pais" name="pais" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Anio de Fundacion</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevaMarca.fundacion" name="fundacion" required>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" (click)="mostrarVista('marcas')">Cancelar</button>
+                <button type="submit" class="btn btn-success">Guardar Marca</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Editar Marca -->
+  <div *ngIf="vistaActual === 'editar-marca'">
+    <div class="row">
+      <div class="col-md-6 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h3>Editar Marca</h3>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="actualizarMarca()">
+              <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevaMarca.nombre" name="nombre" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Pais</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevaMarca.pais" name="pais" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Anio de Fundacion</label>
+                <input type="number" class="form-control" [(ngModel)]="nuevaMarca.fundacion" name="fundacion" required>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" (click)="mostrarVista('marcas')">Cancelar</button>
+                <button type="submit" class="btn btn-success">Actualizar Marca</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Detalle Vehiculo -->
+  <div *ngIf="vistaActual === 'detalle-vehiculo' && vehiculoSeleccionado">
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="card">
+          <div class="card-header">
+            <h3>Detalles del Vehiculo</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Modelo:</strong> {{ vehiculoSeleccionado.modelo }}</p>
+                <p><strong>Anio:</strong> {{ vehiculoSeleccionado.anio }}</p>
+                <p><strong>Precio:</strong> ${{ vehiculoSeleccionado.precio | number }}</p>
+                <p><strong>Color:</strong> {{ vehiculoSeleccionado.color }}</p>
+              </div>
+              <div class="col-md-6">
+                <h5>Informacion de la Marca</h5>
+                <p><strong>Nombre:</strong> {{ getMarcaCompleta(vehiculoSeleccionado.marca_id)?.nombre }}</p>
+                <p><strong>Pais:</strong> {{ getMarcaCompleta(vehiculoSeleccionado.marca_id)?.pais }}</p>
+                <p><strong>Fundacion:</strong> {{ getMarcaCompleta(vehiculoSeleccionado.marca_id)?.fundacion }}</p>
+              </div>
+            </div>
+            <div class="text-center mt-3">
+              <button class="btn btn-secondary" (click)="mostrarVista('principal')">Volver al Listado</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Reporte -->
+  <div *ngIf="vistaActual === 'reporte' && reporteMarcas">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3>Reporte de Marcas por Popularidad</h3>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="alert alert-info">
+                  <strong>Total de Marcas:</strong> {{ reporteMarcas.total_marcas }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="alert alert-success">
+                  <strong>Total de Vehiculos:</strong> {{ reporteMarcas.total_vehiculos }}
+                </div>
+              </div>
+            </div>
+
+            <h5>Marca Mas Activa</h5>
+            <div class="alert alert-warning">
+              <strong>{{ reporteMarcas.marca_mas_activa.nombre }}</strong> con {{ reporteMarcas.marca_mas_activa.total_vehiculos }} vehiculos
+            </div>
+
+            <h5>Detalle por Marca</h5>
+            <div class="row">
+              <div class="col-md-4 mb-3" *ngFor="let item of reporteMarcas.marcas_por_popularidad">
+                <div class="card">
+                  <div class="card-header">
+                    <h6>{{ item.marca.nombre }}</h6>
+                    <small class="text-muted">{{ item.marca.pais }}</small>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>Total de vehiculos:</strong> {{ item.total_vehiculos }}</p>
+                    <h6>Vehiculos:</h6>
+                    <ul class="list-unstyled">
+                      <li *ngFor="let vehiculo of item.vehiculos">
+                        • {{ vehiculo.modelo }} ({{ vehiculo.anio }})
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center mt-3">
+              <button class="btn btn-secondary" (click)="mostrarVista('principal')">Volver al Inicio</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
