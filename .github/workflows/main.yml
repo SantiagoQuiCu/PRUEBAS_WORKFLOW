@@ -1,0 +1,40 @@
+name: Pruebas unitarias
+on:
+  push:
+    branches:
+      - "HU**"
+jobs:
+  job1:
+    name: Pruebas
+    runs-on: ubuntu-latest
+    outputs:
+      salida: ${{ steps.correr-pruebas.outputs.respuesta}}
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v2
+    - name: Configuración de entorno de python
+      uses: actions/setup-python@v5
+      with:
+          python-version: '3.x'
+    - name: Instalación de librerías y dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Correr pruebas
+      id: correr-pruebas
+      run: python -m unittest discover -s tests -v
+    - name: Validar resultado con errores
+      if: ${{ failure() }}
+      env:
+        MENSAJE_ERROR: Una o varias pruebas fallaron
+      run: echo "respuesta=MENSAJE_EXITO" >> $GITHUB_OUTPUT
+    - name: Validar resultado sin errores
+      if: ${{ success() }}
+      env:
+        MENSAJE_EXITO: Todas las pruebas fueron exitosas
+      run: echo "respuesta=MENSAJE_EXITO" >> $GITHUB_OUTPUT
+    - name: Cálculo de cubrimiento
+      id: cubrimiento
+      run: |
+          coverage run -m unittest test/test_persona.py
+          coverage report -m
