@@ -48,7 +48,7 @@ jobs:
       salida: ${{ steps.mensaje.outputs.respuesta}}
     steps:
     - name: Checkout de repositorio
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Configuración de entorno de python
       uses: actions/setup-python@v5
       with:
