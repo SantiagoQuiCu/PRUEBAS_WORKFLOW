@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       salida: ${{ steps.commit_message.outputs.COMMIT_MSG}}
+      salida_branch: ${{ steps.branch.outputs.branch}}
     steps:
     - name: Checkout de repositorio
       uses: actions/checkout@v4
@@ -16,9 +17,30 @@ jobs:
       id: commit_message
       run: |
         echo "COMMIT_MSG=${{ github.event.head_commit.message }}">> $GITHUB_OUTPUT
+    - name : Get branch
+      id : branch
+      run: |
+        echo: "branch=${{ github.ref }}">> $GITHUB_OUTPUT
     - name: Print variable
       run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
+    - name: Print branch
+      run: echo "${{ steps.branch.outputs.branch}}"
   job2:
+    name: Merge devolp a HU
+    runs-on: ubuntu-latest
+    needs: job1
+    if: ${{ contains( needs.job1.outputs.salida, 'Merge') }}
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4    
+    - name: Mezcla devolp -> HU*
+      uses: tukasz/direct-merge-action@master
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        source-branch: develop
+        target-branch: rama2
+    
+  job3:
     name: Pruebas
     needs: job1
     if: ${{ contains( needs.job1.outputs.salida, 'Merge') }}
