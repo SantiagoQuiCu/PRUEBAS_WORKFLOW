@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - "HU**"
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   job1:
     name: Nombre_commit
