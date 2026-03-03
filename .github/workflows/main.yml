@@ -20,6 +20,8 @@ jobs:
       run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
   job2:
     name: Pruebas
+    needs: job1
+    if: ${{ contains( needs.job1.outputs.salida, 'Merge') }}
     runs-on: ubuntu-latest
     outputs:
       salida: ${{ steps.correr-pruebas.outputs.respuesta}}
