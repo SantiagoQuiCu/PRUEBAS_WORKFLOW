@@ -27,3 +27,15 @@ jobs:
       run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
     - name: Printbranch
       run: echo "${{ steps.branch.outputs.branch}}"
+  job2:
+    name: create branch release
+    runs-on: ubuntu-latest
+    needs: job1
+    if: ${{ contains( needs.job1.outputs.salida, 'Release') }}
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4    
+    - name: Crear release
+      run: |
+        git checkout -b release
+        git push -f -u origin release
