@@ -43,8 +43,8 @@ jobs:
       uses: actions/checkout@v4    
     - name: Crear release
       run: |
-        git checkout -b release
-        git push -f -u origin release
+        git checkout -b ${{ needs.job1.outputs.salida_branch}}
+        git push -f -u origin ${{ needs.job1.outputs.salida_branch}}
     - name: Configuración de entorno de python
       uses: actions/setup-python@v5
       with:
@@ -77,7 +77,7 @@ jobs:
       run: echo "${{ steps.mensaje.outputs.respuesta}}"
   job3:
     name: Merge release a main
-    needs: job2
+    needs: [job2,job1]
     if: ${{ contains( needs.job2.outputs.salida, 'exitosas') }}
     runs-on: ubuntu-latest
     steps:
@@ -87,5 +87,5 @@ jobs:
       uses: tukasz/direct-merge-action@master
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        source-branch: release
+        source-branch: ${{ needs.job1.outputs.salida_branch}}
         target-branch: main
