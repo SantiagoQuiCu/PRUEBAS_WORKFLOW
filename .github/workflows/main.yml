@@ -89,11 +89,6 @@ jobs:
     steps:
     - name: Checkout de repositorio
       uses: actions/checkout@v4
-    - name: Checkout develop
-      run: |
-        cd PRUEBAS_WORKFLOW
-        git checkout develop
-        git pull 
     - name: Merge HU a develop
       uses: tukasz/direct-merge-action@master
       with:
