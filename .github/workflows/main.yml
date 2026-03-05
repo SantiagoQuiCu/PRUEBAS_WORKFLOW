@@ -83,7 +83,7 @@ jobs:
       run: echo "${{ steps.mensaje.outputs.respuesta}}"
   job4:
     name: Merge HU a develop
-    needs: [job3, job1]
+    needs: [job1 , job3]
     if: ${{ contains( needs.job3.outputs.salida, 'exitosas') }}
     runs-on: ubuntu-latest
     steps:
@@ -93,6 +93,6 @@ jobs:
       uses: tukasz/direct-merge-action@master
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        source-branch: ${{needs.job1.outputs.branch}}
+        source-branch: ${{needs.job1.outputs.salida_branch}}
         target-branch: develop
       
