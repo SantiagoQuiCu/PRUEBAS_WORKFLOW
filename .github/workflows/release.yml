@@ -1,0 +1,87 @@
+name: Pruebas unitarias Release
+on:
+  push:
+    branches: [develop]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  job1:
+    name: Nombre_commit
+    runs-on: ubuntu-latest
+    outputs:
+      salida: ${{ steps.commit_message.outputs.COMMIT_MSG}}
+      salida_branch: ${{ steps.branch.outputs.branch}}
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4
+    - name: Get last commit message
+      id: commit_message
+      run: |
+        echo "COMMIT_MSG=${{ github.event.head_commit.message }}">> $GITHUB_OUTPUT
+    - name: Get branch
+      id: branch
+      run: |
+        echo "branch=${{ github.ref_name }}">> $GITHUB_OUTPUT
+    - name: Print variable
+      run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
+    - name: Printbranch
+      run: echo "${{ steps.branch.outputs.branch}}"
+  job2:
+    name: create branch release
+    runs-on: ubuntu-latest
+    outputs:
+      salida: ${{ steps.mensaje.outputs.respuesta}}
+    needs: job1
+    if: ${{ contains( needs.job1.outputs.salida, 'Release') }}
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4    
+    - name: Crear release
+      run: |
+        git checkout -b release
+        git push -f -u origin release
+    - name: Configuración de entorno de python
+      uses: actions/setup-python@v5
+      with:
+          python-version: '3.x'
+    - name: Instalación de librerías y dependencias
+      run: |
+        python -m pip install --upgrade pip
+        cd backend
+        pip install -r requirements.txt
+    - name: Correr pruebas
+      id: correr-pruebas
+      run: |
+        cd backend
+        python -m unittest discover -s tests -v
+    - name: Validar resultado con errores
+      id: mensaje
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "respuesta=Todas las pruebas fueron exitosas" >> $GITHUB_OUTPUT
+        else
+          echo "respuesta=Una o varias pruebas fallaron" >> $GITHUB_OUTPUT
+        fi
+    - name: Cálculo de cubrimiento
+      id: cubrimiento
+      run: |
+          cd backend
+          coverage run -m unittest discover -s tests -v
+          coverage report -m
+    - name: print variable
+      run: echo "${{ steps.mensaje.outputs.respuesta}}"
+  job3:
+    name: Merge release a main
+    needs: job2
+    if: ${{ contains( needs.job2.outputs.salida, 'exitosas') }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4
+    - name: Merge HU a develop
+      uses: tukasz/direct-merge-action@master
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        source-branch: release
+        target-branch: main
