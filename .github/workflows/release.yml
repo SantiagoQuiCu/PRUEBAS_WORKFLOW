@@ -22,7 +22,7 @@ jobs:
     - name: Get branch
       id: branch
       run: |
-        if [[ "${{steps.commit_message.outputs.COMMIT_MSG}}" =~ (Release*) ]]; then
+        if [[ "${{steps.commit_message.outputs.COMMIT_MSG}}" =~ (Release.*) ]]; then
           echo "branch=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
         else
           echo "branch=no coincide" >> $GITHUB_OUTPUT
@@ -77,7 +77,7 @@ jobs:
       run: echo "${{ steps.mensaje.outputs.respuesta}}"
   job3:
     name: Merge release a main
-    needs: job2
+    needs: [job2,job1]
     if: ${{ contains( needs.job2.outputs.salida, 'exitosas') }}
     runs-on: ubuntu-latest
     steps:
@@ -87,5 +87,5 @@ jobs:
       uses: tukasz/direct-merge-action@master
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        source-branch: release
+        source-branch: ${{ needs.job1.outputs.salida_branch}}
         target-branch: main
