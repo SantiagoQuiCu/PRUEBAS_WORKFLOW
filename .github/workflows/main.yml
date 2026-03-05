@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - "HU**"
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   job1:
     name: Nombre_commit
@@ -38,11 +41,10 @@ jobs:
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         source-branch: develop
-        target-branch: needs.job1.outputs.branch
+        target-branch: ${{ needs.job1.outputs.salida_branch }}
   job3:
     name: Pruebas
-    needs: job1
-    if: ${{ contains( needs.job1.outputs.salida, 'Merge') }}
+    needs: job2
     runs-on: ubuntu-latest
     outputs:
       salida: ${{ steps.mensaje.outputs.respuesta}}
@@ -79,4 +81,18 @@ jobs:
           coverage report -m
     - name: print variable
       run: echo "${{ steps.mensaje.outputs.respuesta}}"
+  job4:
+    name: Merge HU a develop
+    needs: [job1 , job3]
+    if: ${{ contains( needs.job3.outputs.salida, 'exitosas') }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4
+    - name: Merge HU a develop
+      uses: tukasz/direct-merge-action@master
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        source-branch: ${{needs.job1.outputs.salida_branch}}
+        target-branch: develop
       
