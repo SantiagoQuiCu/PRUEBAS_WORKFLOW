@@ -30,6 +30,8 @@ jobs:
   job2:
     name: create branch release
     runs-on: ubuntu-latest
+    outputs:
+      salida: ${{ steps.mensaje.outputs.respuesta}}
     needs: job1
     if: ${{ contains( needs.job1.outputs.salida, 'Release') }}
     steps:
@@ -69,3 +71,17 @@ jobs:
           coverage report -m
     - name: print variable
       run: echo "${{ steps.mensaje.outputs.respuesta}}"
+  job3:
+    name: Merge release a main
+    needs: job2
+    if: ${{ contains( needs.job2.outputs.salida, 'exitosas') }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v4
+    - name: Merge HU a develop
+      uses: tukasz/direct-merge-action@master
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        source-branch: release
+        target-branch: main
