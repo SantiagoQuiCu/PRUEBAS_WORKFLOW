@@ -24,6 +24,8 @@ jobs:
       run: |
         if [[ ${{steps.commit_message.outputs.COMMIT_MSG}} =~ (Release.*) ]]; then
           echo "branch=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+        else
+          echo "branch=no coincide" >> $GITHUB_OUTPUT
         fi
     - name: Print variable
       run: echo "${{ steps.commit_message.outputs.COMMIT_MSG}}"
