@@ -9,6 +9,7 @@ permissions:
 jobs:
   job1:
     name: Nombre_commit
+    if: ${{ contains(github.event.head_commit.message, 'Merge') }}
     runs-on: ubuntu-latest
     outputs:
       salida: ${{ steps.commit_message.outputs.COMMIT_MSG}}
