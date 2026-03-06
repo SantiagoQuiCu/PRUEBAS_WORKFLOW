@@ -9,6 +9,7 @@ jobs:
   job1:
     name: Nombre_commit
     runs-on: ubuntu-latest
+    if: ${{ contains(github.event.head_commit.message, 'Release') }}
     outputs:
       salida: ${{ steps.commit_message.outputs.COMMIT_MSG}}
       salida_branch: ${{ steps.branch.outputs.branch}}
