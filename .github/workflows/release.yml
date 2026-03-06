@@ -33,7 +33,6 @@ jobs:
     - name: Printbranch
       run: echo "${{ steps.branch.outputs.branch}}"
   job2:
-    if: ${{ contains( needs.job1.outputs.salida, 'Release') }}
     name: create branch release
     runs-on: ubuntu-latest
     outputs:
